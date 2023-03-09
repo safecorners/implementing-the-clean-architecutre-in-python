@@ -9,5 +9,10 @@
     "python.linting.flake8Args": [
         "--config",
         "./src/setup.cfg"
-    ]
+    ],
+    "python.testing.pytestArgs": [
+        "src/auctions"
+    ],
+    "python.testing.unittestEnabled": false,
+    "python.testing.pytestEnabled": true
 }
