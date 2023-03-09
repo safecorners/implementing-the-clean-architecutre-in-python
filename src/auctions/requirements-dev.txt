@@ -1,0 +1,4 @@
+pytest
+factory-boy
+freezegun
+pytest-faker
