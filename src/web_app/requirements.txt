@@ -1,0 +1,4 @@
+flask
+flask-injector
+flask-security
+bcrypt
