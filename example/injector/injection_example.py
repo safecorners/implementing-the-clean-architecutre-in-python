@@ -20,11 +20,11 @@ class UserModule(Module):
 
 class UserAttributeModule(Module):
     def configure(self, binder: Binder) -> None:
-        binder.bind(Name, to="Sherlock")
+        binder.bind(Name, to=Name("Sherlock"))
 
     @provider
     def describe(self, name: Name) -> Description:
-        return "%s is a man of astounding insight" % name
+        return Description("%s is a man of astounding insight" % name)
 
 
 class NumberModule(Module):
