@@ -9,5 +9,6 @@ setup(
         "auctions",
         "auctions_infrastructure",
         "db_infrastructure",
+        "web_app_models",
     ],
 )

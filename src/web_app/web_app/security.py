@@ -7,6 +7,8 @@ from sqlalchemy.orm import Session
 
 from web_app_models import User
 
+__all__ = ["setup", "User"]
+
 
 class SaUserDatastore(UserDatastore):
     def get_user(self, identifier: Any) -> Optional[User]:
