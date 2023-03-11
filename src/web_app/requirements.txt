@@ -2,3 +2,5 @@ flask
 flask-injector
 flask-security
 bcrypt
+marshmallow
+marshmallow-dataclass
