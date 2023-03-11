@@ -1,12 +1,12 @@
 import uuid
 from typing import Any, Optional
 
-from sqlalchemy import Metadata
+from sqlalchemy import MetaData
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.types import CHAR, TypeDecorator
 
-metadata = Metadata()
+metadata = MetaData()
 Base = declarative_base(metadata=metadata)
 
 
@@ -45,4 +45,4 @@ class GUID(TypeDecorator):
         else:
             if not isinstance(value, uuid.UUID):
                 value = uuid.UUID(value)
-            return value
+            return value  # type: ignore
