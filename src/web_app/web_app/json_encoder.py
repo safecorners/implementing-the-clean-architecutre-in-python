@@ -25,4 +25,4 @@ class JSONEncoder(json.JSONEncoder):
 
     @default.register(datetime)
     def serialize_datetime(self, obj: datetime) -> str:
-        return obj.isoformat
+        return obj.isoformat()
