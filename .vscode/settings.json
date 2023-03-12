@@ -16,7 +16,8 @@
         "./src/setup.cfg"
     ],
     "python.testing.pytestArgs": [
-        "src/auctions"
+        "src/auctions",
+        "src/web_app"
     ],
     "python.testing.unittestEnabled": false,
     "python.testing.pytestEnabled": true
