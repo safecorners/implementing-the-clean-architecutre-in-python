@@ -7,7 +7,7 @@ setup(
     install_requires=[
         "flask",
         "flask-injector",
-        "flask-security",
+        "flask-security-too",
         "bcrypt",
         "sqlalchemy",
         "web_app_models",

@@ -1,6 +1,6 @@
 flask
 flask-injector
-flask-security
+flask-security-too
 bcrypt
 marshmallow
 marshmallow-dataclass
