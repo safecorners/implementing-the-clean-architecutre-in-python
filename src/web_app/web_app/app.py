@@ -39,6 +39,10 @@ def create_app(settings_override: Optional[dict] = None) -> Flask:
     app.config["SECURITY_REGISTERABLE"] = True
     # Disable CSRF Protection
     app.config["WTF_CSRF_ENABLED"] = False
+    # Disable pre-request CSRF
+    app.config["WTF_CSRF_CHECK_DEFAULT"] = False
+    # Check csrf for session and http auth (but not token)
+    # app.config["SECURITY_CSRF_PROTECT_MECHANISMS"] = ["basic", "session"]
 
     for key, value in settings_override.items():
         app.config[key] = value

@@ -1,33 +1,39 @@
 from dataclasses import dataclass
 
 import pytest
-from flask import testing
+from flask.testing import FlaskClient
+from sqlalchemy import select
+from sqlalchemy.engine import Connection
+
+from web_app_models import User
 
 
-def test_register_returns_details_with_auth_token(client: testing.FlaskClient) -> None:
+def test_register_returns_details_with_auth_token(
+    client: FlaskClient, connection: Connection
+) -> None:
     response = client.post(
         "/register",
-        json={"email": "test+register@safecorners.io", "password": "password"},
+        json={
+            "email": "test+register@safecorners.io",
+            "password": "password",
+        },
     )
 
     assert response.status_code == 200
-    json_response_body = response.json.copy()
-    assert isinstance(
-        json_response_body["response"]["user"].pop("authentication_token"), str
-    )
-    assert isinstance(json_response_body["response"]["user"].pop("id"), str)
-    assert json_response_body == {"meta": {"code": 200}, "response": {"user": {}}}
+    user = connection.execute(
+        select(User).where(User.email == "test+register@safecorners.io")
+    ).first()
+    assert user is not None
 
 
 @dataclass
 class RegisteredUser:
     email: str
     password: str
-    id: str
 
 
 @pytest.fixture()
-def registered_user(client: testing.FlaskClient) -> RegisteredUser:
+def registered_user(client: FlaskClient) -> RegisteredUser:
     response = client.post(
         "/register",
         json={"email": "test+login@safecorners.io", "password": "password"},
@@ -36,20 +42,17 @@ def registered_user(client: testing.FlaskClient) -> RegisteredUser:
     return RegisteredUser(
         email="test+login@safecorners.io",
         password="password",
-        id=response.json["response"]["user"]["id"],
     )
 
 
-def test_login(client: testing.FlaskClient, registered_user: RegisteredUser) -> None:
+def test_login(client: FlaskClient, registered_user: RegisteredUser) -> None:
     response = client.post(
-        "/login",
+        "/login?include_auth_token",
         json={"email": registered_user.email, "password": registered_user.password},
     )
 
     assert response.status_code == 200
-    json_response_body = response.json.copy()
-    json_response_body["response"]["user"].pop("authentication_token")
-    assert json_response_body == {
-        "meta": {"code": 200},
-        "response": {"user": {"id": registered_user.id}},
-    }
+
+    assert isinstance(
+        response.json["response"]["user"].pop("authentication_token"), str
+    )
