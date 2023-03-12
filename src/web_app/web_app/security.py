@@ -1,4 +1,4 @@
-from typing import Any, Optional
+from typing import Any, Optional, Union
 
 from flask import Flask, request
 from flask_security import Security
@@ -19,8 +19,10 @@ class SaUserDatastore(UserDatastore):
         else:
             return self.session.query(User).filter(User.email == email).one_or_none()
 
-    def find_user(self, *args, **kwargs) -> User:
-        return self.session.query(User).filter_by(**kwargs).one()
+    def find_user(
+        self, case_insensitive: bool = False, **kwargs: Any
+    ) -> Union[User, None]:
+        return self.session.query(User).filter_by(**kwargs).first()
 
     def put(self, model: User) -> User:
         self.session.add(model)
