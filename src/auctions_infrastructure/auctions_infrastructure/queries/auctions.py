@@ -1,3 +1,4 @@
+import logging
 from typing import List
 
 from sqlalchemy import func
@@ -21,9 +22,12 @@ class SqlGetActiveAuctions(GetActiveAuctions, SqlQuery):
 
 class SqlGetSingleAuction(GetSingleAuction, SqlQuery):
     def query(self, auction_id: int) -> AuctionDto:
+        logging.info(self._conn)
+        logging.info(f"auction_id = {auction_id}")
         row = self._conn.execute(
             auctions.select().where(auctions.c.id == auction_id)
         ).first()
+        logging.info(row)
         return _row_to_dto(row)
 
 
