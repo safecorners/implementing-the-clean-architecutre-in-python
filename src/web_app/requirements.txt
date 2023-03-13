@@ -1,0 +1,6 @@
+flask
+flask-injector
+flask-security-too
+bcrypt
+marshmallow
+marshmallow-dataclass

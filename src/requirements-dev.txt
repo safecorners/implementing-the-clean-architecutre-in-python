@@ -1,0 +1,7 @@
+pip-tools
+flake8
+black
+isort
+mypy
+pylint
+pylint-forbidden-imports
