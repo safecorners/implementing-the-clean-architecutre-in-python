@@ -1,0 +1,4 @@
+injector
+sqlalchemy
+stripe
+requests
