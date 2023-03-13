@@ -34,11 +34,12 @@ class RegisteredUser:
 
 @pytest.fixture()
 def registered_user(client: FlaskClient) -> RegisteredUser:
-    response = client.post(
+    client.post(
         "/register",
         json={"email": "test+login@safecorners.io", "password": "password"},
     )
-    client.cookie_jar.clear()
+    if client.cookie_jar:
+        client.cookie_jar.clear()
     return RegisteredUser(
         email="test+login@safecorners.io",
         password="password",

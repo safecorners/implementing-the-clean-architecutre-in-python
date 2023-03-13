@@ -29,5 +29,4 @@ class BeginningAuction:
             starting_price=input_dto.starting_price,
             ends_at=input_dto.ends_at,
         )
-
         self.auctions_repository.save(auction)

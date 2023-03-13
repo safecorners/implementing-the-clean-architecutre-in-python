@@ -1,10 +1,10 @@
 import os
 from typing import Optional
 
-import flask_injector
 import injector
 from flask import Flask, Response, request
 from flask_injector import FlaskInjector
+from sqlalchemy.engine import Connection
 from sqlalchemy.orm import Session
 
 from main import bootstrap_app
@@ -52,16 +52,23 @@ def create_app(settings_override: Optional[dict] = None) -> Flask:
 
     app_context = bootstrap_app()
     FlaskInjector(app, modules=[AuctionsWeb()], injector=app_context.injector)
-    app.injector = app_context.injector
+    app.injector = app_context.injector  # type: ignore
 
     @app.before_request
-    def before_request() -> None:
+    def transaction_start() -> None:
         app_context.injector.get(RequestScope).enter()
-        request.session = app_context.injector.get(Session)
+        request.connection = app_context.injector.get(Connection)  # type: ignore
+        request.tx = request.connection.begin()  # type: ignore
+        request.session = app_context.injector.get(Session)  # type: ignore
 
     @app.after_request
-    def after_request(response: Response) -> Response:
-        app_context.injector.get(RequestScope).exit()
+    def transaction_end(response: Response) -> Response:
+        scope = app_context.injector.get(RequestScope)
+        try:
+            if hasattr(request, "tx") and response.status_code < 400:
+                request.tx.commit()  # type: ignore
+        finally:
+            scope.exit()
 
         return response
 

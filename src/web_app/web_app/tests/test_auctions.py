@@ -4,22 +4,55 @@ import factory
 import injector
 import pytest
 from flask.testing import FlaskClient
+from sqlalchemy.engine import Connection
 
-from auctions.application.repositories import AuctionsRepository
+from auctions import (AuctionsRepository, BeginningAuction,
+                      BeginningAuctionInputDto)
 from auctions.domain.entities import Auction
-from auctions.tests.factories import AuctionFactory, get_usd
+from auctions.tests.factories import get_usd
 from main.modules import RequestScope
+
+
+class BeginningAuctionInputDtoFactory(factory.Factory):
+    class Meta:
+        model = BeginningAuctionInputDto
+
+    auction_id = factory.Sequence(lambda n: n)
+    title = factory.Faker("name")
+    starting_price = get_usd("0.99")
+    ends_at = factory.Faker("future_datetime", end_date="+7d")
 
 
 @pytest.fixture()
 def example_auction(container: injector.Injector) -> int:
     with container.get(RequestScope):
+        beginning_auction_uc = container.get(BeginningAuction)
+        dto = BeginningAuctionInputDtoFactory.build()
+        logging.info(dto)
+        beginning_auction_uc.execute(dto)
         auctions_repository = container.get(AuctionsRepository)
-        auction: Auction = AuctionFactory.build()
-        auctions_repository.save(auction)
+        auction = auctions_repository.get(dto.auction_id)
         logging.info(auction)
+        connection = container.get(Connection)
+        connection.commit()
+        assert auction.id == dto.auction_id
 
-    return int(auction.id)
+    return int(dto.auction_id)
+
+
+# def test_single_auction(client: FlaskClient, example_auction: int) -> None:
+#     response = client.get(
+#         f"/auctions/{example_auction}", headers={"Content-Type": "application/json"}
+#     )
+
+#     assert response.status_code == 200
+#     assert type(response.json) == list
+
+
+# def test_returns_list_of_auctions(client: FlaskClient) -> None:
+#     response = client.get("/auctions/", headers={"Content-Type": "application/json"})
+#     assert response.status_code == 200
+#     assert type(response.json) == list
 
 
 @pytest.fixture()

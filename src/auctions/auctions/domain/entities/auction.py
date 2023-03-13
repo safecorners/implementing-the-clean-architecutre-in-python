@@ -31,7 +31,7 @@ class Auction:
         self._withdrawn_bids_ids: List[BidId] = []
 
     def place_bid(self, bidder_id: BidderId, amount: Money) -> None:
-        if datetime.now() > self.ends_at:
+        if self._should_end:
             raise BidOnEndedAuction
 
         if amount > self.starting_price:
