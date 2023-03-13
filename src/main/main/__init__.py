@@ -6,8 +6,9 @@ import injector
 from sqlalchemy.engine import Connection, Engine, create_engine
 
 from auctions import Auctions
+from auctions_infrastructure import AuctionsInfrastructure
 from db_infrastructure import metadata
-from main.modules import AuctionsInfrastructure, Db
+from main.modules import Db
 from web_app_models import User
 
 __all__ = ["bootstrap_app"]
@@ -50,6 +51,7 @@ def _setup_dependency_injection(settings: dict, engine: Engine) -> injector.Inje
 
 
 def _create_db_schema(engine: Engine) -> None:
+    from auctions_infrastructure import auctions, bids  # noqa
     from web_app_models import Role, RolesUsers, User  # noqa
 
     metadata.create_all(engine)

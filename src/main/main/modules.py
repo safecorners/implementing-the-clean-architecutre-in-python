@@ -5,12 +5,6 @@ import injector
 from sqlalchemy.engine import Connection, Engine
 from sqlalchemy.orm import Session
 
-from auctions import AuctionsRepository
-from auctions.domain.entities import Auction
-from auctions.domain.value_objects import Money
-from auctions.domain.value_objects.money import currency
-from auctions.tests.in_memory_repo import InMemoryAuctionsRepository
-
 
 # https://injector.readthedocs.io/en/latest/scopes.html#implementing-new-scopes
 class RequestScope(injector.Scope):
@@ -57,17 +51,8 @@ class RequestScope(injector.Scope):
 request = injector.ScopeDecorator(RequestScope)
 
 
-class AuctionsInfrastructure(injector.Module):
-    # InMemoryRepository should be singleton
-    @injector.singleton
-    @injector.provider
-    def auctions_repository(self) -> AuctionsRepository:
-        repository = InMemoryAuctionsRepository()
-        return repository
-
-
 class Db(injector.Module):
-    def __init__(self, engine) -> None:
+    def __init__(self, engine: Engine) -> None:
         self._engine = engine
 
     @request
