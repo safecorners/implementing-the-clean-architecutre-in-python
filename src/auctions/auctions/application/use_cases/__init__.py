@@ -10,7 +10,6 @@ __all__ = [
     "WithdrawingBids",
     "WithdrawingBidsInputDto",
 ]
-
 from auctions.application.use_cases.beginning_auction import (
     BeginningAuction,
     BeginningAuctionInputDto,

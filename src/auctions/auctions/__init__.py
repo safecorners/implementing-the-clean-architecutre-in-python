@@ -12,6 +12,7 @@ __all__ = [
     "BeginningAuctionInputDto",
     "EndingAuction",
     "PlacingBid",
+    "PlacingBidOutputBoundary",
     "WithdrawingBids",
     # input dtos
     "EndingAuctionInputDto",
@@ -19,10 +20,14 @@ __all__ = [
     "WithdrawingBidsInputDto",
     # output dtos
     "PlacingBidOutputDto",
-    # boundary
-    "PlacingBidOutputBoundary",
+    # queries
+    "GetActiveAuctions",
+    "GetSingleAuction",
+    # queries dto
+    "AuctionDto",
 ]
 
+from auctions.application.queries import AuctionDto, GetActiveAuctions, GetSingleAuction
 from auctions.application.repositories import AuctionsRepository
 from auctions.application.use_cases import (
     BeginningAuction,
