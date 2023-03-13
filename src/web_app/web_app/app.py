@@ -1,7 +1,6 @@
 import os
 from typing import Optional
 
-import injector
 from flask import Flask, Response, request
 from flask_injector import FlaskInjector
 from sqlalchemy.engine import Connection
@@ -20,7 +19,7 @@ def create_app(settings_override: Optional[dict] = None) -> Flask:
 
     app = Flask(__name__)
 
-    # app.json_decoder = JSONEncoder
+    app.json_encoder = JSONEncoder
 
     app.register_blueprint(auctions_blueprint, url_prefix="/auctions")
 
@@ -66,10 +65,16 @@ def create_app(settings_override: Optional[dict] = None) -> Flask:
         scope = app_context.injector.get(RequestScope)
         try:
             if hasattr(request, "tx") and response.status_code < 400:
-                request.tx.commit()  # type: ignore
+                request.tx.commit()
         finally:
             scope.exit()
 
+        return response
+
+    @app.after_request
+    def add_cors_headers(response: Response) -> Response:
+        response.headers["Access-Control-Allow-Origin"] = "*"
+        response.headers["Access-Control-Allow-Headers"] = "*"
         return response
 
     security_setup(app)
