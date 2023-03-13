@@ -17,7 +17,7 @@
     ],
     "python.testing.pytestArgs": [
         "src/auctions",
-        "src/web_app"
+        "src/auctions_infrastructure"
     ],
     "python.testing.unittestEnabled": false,
     "python.testing.pytestEnabled": true
