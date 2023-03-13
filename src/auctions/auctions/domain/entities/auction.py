@@ -1,8 +1,14 @@
 from __future__ import annotations
 
+from datetime import datetime
 from typing import List
 
 from auctions.domain.entities.bid import Bid
+from auctions.domain.exceptions import (
+    AuctionAlreadyEnded,
+    AuctionHasNotEnded,
+    BidOnEndedAuction,
+)
 from auctions.domain.value_objects import AuctionId, BidderId, BidId, Money
 
 
@@ -13,14 +19,21 @@ class Auction:
         title: str,
         starting_price: Money,
         bids: List[Bid],
+        ends_at: datetime,
+        ended: bool,
     ) -> None:
         self.id = id
         self.title = title
         self.starting_price = starting_price
         self.bids = sorted(bids, key=lambda bid: bid.amount)
+        self.ends_at = ends_at
+        self._ended = ended
         self._withdrawn_bids_ids: List[BidId] = []
 
     def place_bid(self, bidder_id: BidderId, amount: Money) -> None:
+        if datetime.now() > self.ends_at:
+            raise BidOnEndedAuction
+
         if amount > self.starting_price:
             new_bid = Bid(
                 id=None,
@@ -28,6 +41,10 @@ class Auction:
                 amount=amount,
             )
             self.bids.append(new_bid)
+
+    @property
+    def _should_end(self) -> bool:
+        return datetime.now(tz=self.ends_at.tzinfo) > self.ends_at
 
     @property
     def current_price(self) -> Money:
@@ -54,8 +71,30 @@ class Auction:
     def withdrawn_bids_ids(self) -> List[BidId]:
         return self._withdrawn_bids_ids
 
+    def end(self) -> None:
+        if not self._should_end:
+            raise AuctionHasNotEnded
+        if self._ended is True:
+            raise AuctionAlreadyEnded
+
+        self._ended = True
+
+    @classmethod
+    def create(
+        cls, id: AuctionId, title: str, starting_price: Money, ends_at: datetime
+    ) -> Auction:
+        auction = Auction(
+            id=id,
+            title=title,
+            starting_price=starting_price,
+            bids=[],
+            ends_at=ends_at,
+            ended=False,
+        )
+        return auction
+
     def __str__(self) -> str:
         return f'<Auction #{self.id} title="{self.title}" current_price={self.current_price}>'
 
-    def __eq__(self, other: Auction) -> bool:
+    def __eq__(self, other: object) -> bool:
         return isinstance(other, Auction) and vars(self) == vars(other)

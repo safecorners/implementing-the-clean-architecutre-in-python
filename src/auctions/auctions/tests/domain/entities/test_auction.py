@@ -1,5 +1,19 @@
+from datetime import datetime, timedelta
+
+import pytest
+
 from auctions.domain.entities import Bid
+from auctions.domain.exceptions import (
+    AuctionAlreadyEnded,
+    AuctionHasNotEnded,
+    BidOnEndedAuction,
+)
 from auctions.tests.factories import AuctionFactory, get_usd
+
+
+@pytest.fixture()
+def yesterday() -> datetime:
+    return datetime.now() - timedelta(days=1)
 
 
 def test_should_use_starting_price_as_current_price_for_empty_bids_list() -> None:
@@ -77,3 +91,33 @@ def test_should_not_be_winning_if_bid_lower_than_current_price() -> None:
     auction.place_bid(bidder_id=lower_bid_bidder_id, amount=get_usd("5.00"))
 
     assert lower_bid_bidder_id not in auction.winners
+
+
+def test_should_not_allow_placing_bids_for_ended_auction(yesterday: datetime) -> None:
+    auction = AuctionFactory(ends_at=yesterday)
+
+    with pytest.raises(BidOnEndedAuction):
+        auction.place_bid(bidder_id=1, amount=auction.current_price + get_usd("1.00"))
+
+
+def test_should_raise_if_auction_has_not_been_ended() -> None:
+    auction = AuctionFactory()
+
+    with pytest.raises(AuctionHasNotEnded):
+        auction.end()
+
+
+def test_EndedAuction_PlacingBid_RaisesException(yesterday: datetime) -> None:
+    auction = AuctionFactory(ends_at=yesterday)
+    auction.end()
+
+    with pytest.raises(BidOnEndedAuction):
+        auction.place_bid(bidder_id=1, amount=get_usd("19.99"))
+
+
+def test_EndedAuction_Ending_RaisesException(yesterday: datetime) -> None:
+    auction = AuctionFactory(ends_at=yesterday)
+    auction.end()
+
+    with pytest.raises(AuctionAlreadyEnded):
+        auction.end()

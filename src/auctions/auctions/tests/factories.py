@@ -19,3 +19,5 @@ class AuctionFactory(factory.Factory):
     bids = factory.List([])
     title = factory.Faker("name")
     starting_price = get_usd("10.00")
+    ends_at = factory.Faker("future_datetime", end_date="+7d")
+    ended = False

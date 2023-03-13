@@ -1,4 +1,8 @@
 __all__ = [
+    "BeginningAuction",
+    "BeginningAuctionInputDto",
+    "EndingAuction",
+    "EndingAuctionInputDto",
     "PlacingBid",
     "PlacingBidInputDto",
     "PlacingBidOutputBoundary",
@@ -7,6 +11,14 @@ __all__ = [
     "WithdrawingBidsInputDto",
 ]
 
+from auctions.application.use_cases.beginning_auction import (
+    BeginningAuction,
+    BeginningAuctionInputDto,
+)
+from auctions.application.use_cases.ending_auction import (
+    EndingAuction,
+    EndingAuctionInputDto,
+)
 from auctions.application.use_cases.placing_bid import (
     PlacingBid,
     PlacingBidInputDto,

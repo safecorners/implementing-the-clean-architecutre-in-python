@@ -1,6 +1,14 @@
-class DomainException(Exception):
+class BidOnEndedAuction(Exception):
     ...
 
 
-class BidOnEndedAuction(DomainException):
+class AuctionEndingInPast(Exception):
+    ...
+
+
+class AuctionAlreadyEnded(Exception):
+    ...
+
+
+class AuctionHasNotEnded(Exception):
     ...

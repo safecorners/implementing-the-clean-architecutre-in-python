@@ -8,9 +8,13 @@ __all__ = [
     # repositories
     "AuctionsRepository",
     # use cases
+    "BeginningAuction",
+    "BeginningAuctionInputDto",
+    "EndingAuction",
     "PlacingBid",
     "WithdrawingBids",
     # input dtos
+    "EndingAuctionInputDto",
     "PlacingBidInputDto",
     "WithdrawingBidsInputDto",
     # output dtos
@@ -21,6 +25,10 @@ __all__ = [
 
 from auctions.application.repositories import AuctionsRepository
 from auctions.application.use_cases import (
+    BeginningAuction,
+    BeginningAuctionInputDto,
+    EndingAuction,
+    EndingAuctionInputDto,
     PlacingBid,
     PlacingBidInputDto,
     PlacingBidOutputBoundary,
@@ -33,11 +41,19 @@ from auctions.domain.value_objects import AuctionId
 
 class Auctions(injector.Module):
     @injector.provider
+    def beginning_auction_uc(self, repo: AuctionsRepository) -> BeginningAuction:
+        return BeginningAuction(repo)
+
+    @injector.provider
+    def ending_auction_uc(self, repo: AuctionsRepository) -> EndingAuction:
+        return EndingAuction(repo)
+
+    @injector.provider
     def placing_bid_uc(
         self, boundary: PlacingBidOutputBoundary, repo: AuctionsRepository
     ) -> PlacingBid:
         return PlacingBid(boundary, repo)
 
     @injector.provider
-    def Withdrawing_bids_uc(self, repo: AuctionsRepository) -> WithdrawingBids:
+    def withdrawing_bids_uc(self, repo: AuctionsRepository) -> WithdrawingBids:
         return WithdrawingBids(repo)
