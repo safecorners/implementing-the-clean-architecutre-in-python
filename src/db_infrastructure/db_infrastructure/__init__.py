@@ -3,7 +3,7 @@ from typing import Any, Optional
 
 from sqlalchemy import MetaData
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import declarative_base
 from sqlalchemy.types import CHAR, TypeDecorator
 
 metadata = MetaData()
