@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 
 from main import bootstrap_app
 from main.modules import RequestScope
+from web_app.blueprints.auctions import AuctionsWeb, auctions_blueprint
 from web_app.json_encoder import JSONEncoder
 from web_app.security import setup as security_setup
 
@@ -20,6 +21,8 @@ def create_app(settings_override: Optional[dict] = None) -> Flask:
     app = Flask(__name__)
 
     # app.json_decoder = JSONEncoder
+
+    app.register_blueprint(auctions_blueprint, url_prefix="/auctions")
 
     app.config["DEBUG"] = True
     # Generate a key using secrets.token_urlsafe()
@@ -48,7 +51,7 @@ def create_app(settings_override: Optional[dict] = None) -> Flask:
         app.config[key] = value
 
     app_context = bootstrap_app()
-    FlaskInjector(app, modules=[], injector=app_context.injector)
+    FlaskInjector(app, modules=[AuctionsWeb()], injector=app_context.injector)
     app.injector = app_context.injector
 
     @app.before_request

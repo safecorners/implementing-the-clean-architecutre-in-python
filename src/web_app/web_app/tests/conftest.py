@@ -1,11 +1,11 @@
 import os
+from typing import Generator
 
 import injector
 import pytest
 from _pytest.tmpdir import TempPathFactory
 from flask import Flask, testing
 from sqlalchemy.engine import Connection, create_engine
-from sqlalchemy.orm import Session
 
 from web_app.app import create_app
 
@@ -46,3 +46,10 @@ def container(app: Flask) -> injector.Injector:
 @pytest.fixture()
 def client(app: Flask) -> testing.FlaskClient:
     return app.test_client()
+
+
+@pytest.fixture()
+def connection() -> Generator[Connection, None, None]:
+    engine = create_engine(os.environ["DB_DSN"])
+    yield engine.connect()
+    engine.dispose()

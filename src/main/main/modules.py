@@ -58,6 +58,8 @@ request = injector.ScopeDecorator(RequestScope)
 
 
 class AuctionsInfrastructure(injector.Module):
+    # InMemoryRepository should be singleton
+    @injector.singleton
     @injector.provider
     def auctions_repository(self) -> AuctionsRepository:
         example_auction = Auction(
