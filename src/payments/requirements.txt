@@ -2,3 +2,4 @@ injector
 sqlalchemy
 stripe
 requests
+types-requests
