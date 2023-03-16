@@ -18,5 +18,5 @@ class InMemoryAuctionsRepository(AuctionsRepository):
     def save(self, auction: Auction) -> None:
         for event in auction.domain_events:
             self._event_bus.emit(event)
-        auction.clear_event()
+        auction.clear_events()
         self._data[auction.id] = copy.deepcopy(auction)

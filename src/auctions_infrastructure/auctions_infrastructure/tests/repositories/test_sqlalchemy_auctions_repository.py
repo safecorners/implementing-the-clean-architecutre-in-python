@@ -1,5 +1,6 @@
 from datetime import datetime
 from decimal import Decimal
+from unittest.mock import Mock
 
 import pytest
 from sqlalchemy import func, select
@@ -9,7 +10,26 @@ from auctions.domain.entities import Auction, Bid
 from auctions_infrastructure import auctions, bids
 from auctions_infrastructure.repositories import SqlAlchemyAuctionsRepository
 from db_infrastructure import Base
+from foundation.events import Event, EventBus
 from foundation.value_objects.factories import get_usd
+
+
+@pytest.fixture
+def event_bus_mock() -> Mock:
+    return Mock(spec_set=EventBus)
+
+
+class EventBusStub(EventBus):
+    def __init__(self) -> None:
+        self.events = []
+
+    def emit(self, event: Event) -> None:
+        self.events.append(event)
+
+
+@pytest.fixture
+def event_bus_stub() -> EventBusStub:
+    return EventBusStub()
 
 
 @pytest.fixture(scope="session")
@@ -51,7 +71,7 @@ def expired_auction(connection: Connection, past_date: datetime) -> Row:
             }
         )
     )
-    return connection.execute(auctions.select(whereclause=auctions.c.id == 0)).first()
+    return connection.execute(auctions.select().where(auctions.c.id == 0)).first()
 
 
 @pytest.fixture()
@@ -130,11 +150,11 @@ def test_saves_auction_changes(
 
     SqlAlchemyAuctionsRepository(connection).save(auction)
     assert connection.execute(select(func.count("*")).select_from(bids)).scalar() == 2
-    proxy = connection.execute(
+    saved_auction = connection.execute(
         select(auctions).where(auctions.c.id == auction_model_with_a_bid.id)
     ).first()
-    assert proxy.current_price == new_bid_price.amount
-    assert proxy.ended
+    assert saved_auction.current_price == new_bid_price.amount
+    assert saved_auction.ended
 
 
 @pytest.mark.usefixtures("transaction")

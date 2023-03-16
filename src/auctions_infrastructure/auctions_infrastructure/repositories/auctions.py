@@ -7,12 +7,14 @@ from auctions.application.repositories import AuctionsRepository
 from auctions.domain.entities import Auction, Bid
 from auctions.domain.value_objects import AuctionId
 from auctions_infrastructure import auctions, bids
+from foundation.events import EventBus
 from foundation.value_objects.factories import get_usd
 
 
 class SqlAlchemyAuctionsRepository(AuctionsRepository):
-    def __init__(self, connection: Connection) -> None:
+    def __init__(self, connection: Connection, event_bus: EventBus) -> None:
         self._conn = connection
+        self._event_bus = event_bus
 
     def get(self, auction_id: AuctionId) -> Auction:
         row = self._conn.execute(
@@ -74,3 +76,8 @@ class SqlAlchemyAuctionsRepository(AuctionsRepository):
             self._conn.execute(
                 bids.delete().where(bids.c.id.in_(auction.withdrawn_bids_ids))
             )
+
+        for event in auction.domain_events:
+            self._event_bus.emit(event)
+
+        auction.clear_events()

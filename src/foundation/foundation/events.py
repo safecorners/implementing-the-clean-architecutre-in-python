@@ -17,14 +17,16 @@ class EventMixin:
     def domain_events(self) -> List[Event]:
         return self._pending_domain_events[:]
 
-    def clear_event(self) -> None:
+    def clear_events(self) -> None:
         self._pending_domain_events.clear()
 
 
-class EventBus:
+class EventBus(abc.ABC):
+    @abc.abstractmethod
     def emit(self, event: Event) -> None:
         NotImplementedError
 
+    @abc.abstractmethod
     def subscribe(
         self,
         event_cls: Type[Event],
