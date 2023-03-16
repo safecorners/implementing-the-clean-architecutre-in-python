@@ -7,7 +7,6 @@ from flask.testing import FlaskClient
 from sqlalchemy.engine import Connection
 
 from auctions import AuctionsRepository, BeginningAuction, BeginningAuctionInputDto
-from auctions.domain.entities import Auction
 from foundation.value_objects.factories import get_usd
 from main.modules import RequestScope
 

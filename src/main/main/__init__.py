@@ -3,13 +3,12 @@ from dataclasses import dataclass
 
 import dotenv
 import injector
-from sqlalchemy.engine import Connection, Engine, create_engine
+from sqlalchemy.engine import Engine, create_engine
 
 from auctions import Auctions
 from auctions_infrastructure import AuctionsInfrastructure
 from db_infrastructure import metadata
 from main.modules import Db, EventBusModule
-from web_app_models import User
 
 __all__ = ["bootstrap_app"]
 
