@@ -6,8 +6,8 @@ from sqlalchemy.engine import Connection, Row
 from auctions.application.repositories import AuctionsRepository
 from auctions.domain.entities import Auction, Bid
 from auctions.domain.value_objects import AuctionId
-from auctions.tests.factories import get_usd
 from auctions_infrastructure import auctions, bids
+from foundation.value_objects.factories import get_usd
 
 
 class SqlAlchemyAuctionsRepository(AuctionsRepository):

@@ -10,6 +10,7 @@ setup(
         "stripe",
         "requests",
         "db_infrastructure",
+        "foundation",
     ],
     extras_require={"dev": ["pytest"]},
 )

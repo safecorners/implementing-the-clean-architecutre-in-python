@@ -7,8 +7,8 @@ from uuid import UUID
 
 from sqlalchemy.engine import Connection
 
-from auctions.domain.value_objects import Money
-from auctions.tests.factories import get_usd
+from foundation.value_objects import Money
+from foundation.value_objects.factories import get_usd
 from payments.models import payments
 
 

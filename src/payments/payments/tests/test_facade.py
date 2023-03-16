@@ -7,8 +7,8 @@ import pytest
 from _pytest.fixtures import SubRequest
 from sqlalchemy.engine import Connection, Engine, Row
 
-from auctions.tests.factories import get_usd
 from db_infrastructure import Base
+from foundation.value_objects.factories import get_usd
 from payments.api import ApiConsumer
 from payments.api.exceptions import PaymentFailedError
 from payments.config import PaymentsConfig

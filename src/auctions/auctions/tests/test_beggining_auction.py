@@ -4,8 +4,8 @@ import pytest
 
 from auctions.application.use_cases import BeginningAuction, BeginningAuctionInputDto
 from auctions.domain.exceptions import AuctionEndingInPast
-from auctions.tests.factories import get_usd
 from auctions.tests.in_memory_repo import InMemoryAuctionsRepository
+from foundation.value_objects.factories import get_usd
 
 
 @pytest.fixture()

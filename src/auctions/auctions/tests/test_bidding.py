@@ -16,8 +16,9 @@ from auctions.application.use_cases.placing_bid import (
 from auctions.domain.entities import Auction
 from auctions.domain.exceptions import BidOnEndedAuction
 from auctions.domain.value_objects import AuctionId
-from auctions.tests.factories import AuctionFactory, get_usd
+from auctions.tests.factories import AuctionFactory
 from auctions.tests.in_memory_repo import InMemoryAuctionsRepository
+from foundation.value_objects.factories import get_usd
 
 
 class PlacingBidOutputBoundaryFake(PlacingBidOutputBoundary):

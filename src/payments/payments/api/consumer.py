@@ -2,7 +2,7 @@ from typing import Tuple, Type, TypeVar
 
 import requests
 
-from auctions.domain.value_objects import Money
+from foundation.value_objects import Money
 from payments.api.exceptions import PaymentFailedError
 from payments.api.requests import CaptureRequest, ChargeRequest, Request
 from payments.api.responses import CaptureResponse, ChargeResponse

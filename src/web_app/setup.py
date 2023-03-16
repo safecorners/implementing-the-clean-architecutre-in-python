@@ -14,6 +14,7 @@ setup(
         "db_infrastructure",
         "main",
         "auctions",
+        "foundation",
     ],
     extras_require={"dev": ["pytest"]},
 )

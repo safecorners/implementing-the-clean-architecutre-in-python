@@ -5,7 +5,7 @@ from decimal import Decimal, DecimalException
 from functools import total_ordering
 from typing import Any, Type
 
-from auctions.domain.value_objects.money.currency import Currency
+from foundation.value_objects import Currency
 
 
 @total_ordering
@@ -39,7 +39,7 @@ class Money:
     def amount(self) -> Decimal:
         return self._amount
 
-    def __eq__(self, other: Money) -> bool:
+    def __eq__(self, other: object) -> bool:
         if not isinstance(other, Money):
             raise TypeError
         return self.currency == other._currency and self.amount == other.amount

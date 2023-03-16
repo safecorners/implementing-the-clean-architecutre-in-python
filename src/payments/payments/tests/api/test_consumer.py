@@ -4,7 +4,7 @@ import pytest
 import requests
 from _pytest.fixtures import SubRequest
 
-from auctions.tests.factories import get_usd
+from foundation.value_objects.factories import get_usd
 from payments.api import ApiConsumer
 from payments.api.requests import Request
 

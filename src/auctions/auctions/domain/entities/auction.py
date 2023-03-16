@@ -9,7 +9,8 @@ from auctions.domain.exceptions import (
     AuctionHasNotEnded,
     BidOnEndedAuction,
 )
-from auctions.domain.value_objects import AuctionId, BidderId, BidId, Money
+from auctions.domain.value_objects import AuctionId, BidderId, BidId
+from foundation.value_objects import Money
 
 
 class Auction:

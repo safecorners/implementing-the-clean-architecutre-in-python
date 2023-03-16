@@ -9,6 +9,7 @@ setup(
         "sqlalchemy",
         "pytz",
         "auctions",
+        "foundation",
         "db_infrastructure",
     ],
     extras_require={"dev": ["pytest"]},

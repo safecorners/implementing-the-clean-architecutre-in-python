@@ -3,7 +3,7 @@ from uuid import UUID
 
 from sqlalchemy.engine import Connection
 
-from auctions.domain.value_objects import Money
+from foundation.value_objects import Money
 from payments import dao
 from payments.api import ApiConsumer, PaymentFailedError
 from payments.config import PaymentsConfig

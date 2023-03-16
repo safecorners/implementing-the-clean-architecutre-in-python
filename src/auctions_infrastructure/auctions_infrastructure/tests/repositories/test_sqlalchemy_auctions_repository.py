@@ -6,10 +6,10 @@ from sqlalchemy import func, select
 from sqlalchemy.engine import Connection, Engine, Row
 
 from auctions.domain.entities import Auction, Bid
-from auctions.tests.factories import get_usd
 from auctions_infrastructure import auctions, bids
 from auctions_infrastructure.repositories import SqlAlchemyAuctionsRepository
 from db_infrastructure import Base
+from foundation.value_objects.factories import get_usd
 
 
 @pytest.fixture(scope="session")

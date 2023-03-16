@@ -3,10 +3,11 @@ from typing import List
 from sqlalchemy import func
 from sqlalchemy.engine import Row
 
-from auctions.application.queries import AuctionDto, GetActiveAuctions, GetSingleAuction
-from auctions.tests.factories import get_usd
+from auctions.application.queries import (AuctionDto, GetActiveAuctions,
+                                          GetSingleAuction)
 from auctions_infrastructure import auctions
 from auctions_infrastructure.queries.base import SqlQuery
+from foundation.value_objects.factories import get_usd
 
 
 class SqlGetActiveAuctions(GetActiveAuctions, SqlQuery):

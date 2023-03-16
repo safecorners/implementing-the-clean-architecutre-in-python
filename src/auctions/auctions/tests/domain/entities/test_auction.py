@@ -8,7 +8,8 @@ from auctions.domain.exceptions import (
     AuctionHasNotEnded,
     BidOnEndedAuction,
 )
-from auctions.tests.factories import AuctionFactory, get_usd
+from auctions.tests.factories import AuctionFactory
+from foundation.value_objects.factories import get_usd
 
 
 @pytest.fixture()

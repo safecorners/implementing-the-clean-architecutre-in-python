@@ -4,7 +4,7 @@ from flask import Request, abort, jsonify, make_response
 from marshmallow import Schema, exceptions
 from marshmallow_dataclass import class_schema
 
-from auctions.domain.value_objects import Money
+from foundation.value_objects import Money
 from web_app.serialization.fields import Dollars
 
 TDto = TypeVar("TDto")
