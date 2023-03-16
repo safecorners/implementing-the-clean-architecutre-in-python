@@ -3,7 +3,7 @@ from datetime import datetime
 from functools import singledispatchmethod
 
 from auctions import AuctionDto
-from auctions.domain.value_objects import Money
+from foundation.value_objects import Money
 
 
 class JSONEncoder(json.JSONEncoder):

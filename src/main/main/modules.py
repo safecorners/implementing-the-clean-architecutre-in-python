@@ -5,6 +5,8 @@ import injector
 from sqlalchemy.engine import Connection, Engine
 from sqlalchemy.orm import Session
 
+from foundation.events import EventBus, InMemoryEventBus
+
 
 # https://injector.readthedocs.io/en/latest/scopes.html#implementing-new-scopes
 class RequestScope(injector.Scope):
@@ -64,3 +66,10 @@ class Db(injector.Module):
     @injector.provider
     def session(self, connection: Connection) -> Session:
         return Session(bind=connection)
+
+
+class EventBusModule(injector.Module):
+    @injector.singleton
+    @injector.provider
+    def event_bus(self) -> EventBus:
+        return InMemoryEventBus()

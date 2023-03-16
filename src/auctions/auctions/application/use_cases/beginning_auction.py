@@ -4,7 +4,8 @@ from datetime import datetime
 from auctions.application.repositories import AuctionsRepository
 from auctions.domain.entities import Auction
 from auctions.domain.exceptions import AuctionEndingInPast
-from auctions.domain.value_objects import AuctionId, Money
+from auctions.domain.value_objects import AuctionId
+from foundation.value_objects import Money
 
 
 @dataclass

@@ -1,14 +1,7 @@
-from decimal import Decimal
-from typing import Union
-
 import factory
 
 from auctions.domain.entities import Auction
-from auctions.domain.value_objects.money import Money, currency
-
-
-def get_usd(amount: Union[Decimal, str, float, int]) -> Money:
-    return Money(currency.USD, amount)
+from foundation.value_objects.factories import get_usd
 
 
 class AuctionFactory(factory.Factory):

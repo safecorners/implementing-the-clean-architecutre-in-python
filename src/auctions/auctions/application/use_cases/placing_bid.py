@@ -2,7 +2,8 @@ import abc
 from dataclasses import dataclass
 
 from auctions.application.repositories import AuctionsRepository
-from auctions.domain.value_objects import AuctionId, BidderId, Money
+from auctions.domain.value_objects import AuctionId, BidderId
+from foundation.value_objects import Money
 
 
 @dataclass(frozen=True)

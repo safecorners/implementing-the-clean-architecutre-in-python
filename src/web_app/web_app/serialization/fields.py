@@ -2,10 +2,9 @@ from __future__ import annotations
 
 import typing
 
+from foundation.value_objects import Money
+from foundation.value_objects.factories import get_usd
 from marshmallow import exceptions, fields
-
-from auctions.domain.value_objects import Money
-from auctions.tests.factories import get_usd
 
 
 class Dollars(fields.Field):

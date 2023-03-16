@@ -18,6 +18,8 @@
     "python.testing.pytestArgs": [
         "src/auctions",
         "src/auctions_infrastructure",
+        "src/foundation",
+        "src/payments",
         "src/web_app"
     ],
     "python.testing.unittestEnabled": false,

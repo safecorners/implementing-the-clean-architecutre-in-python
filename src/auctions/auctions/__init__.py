@@ -5,6 +5,11 @@ __all__ = [
     "Auctions",
     # value objects
     "AuctionId",
+    # events
+    "AuctionBegan",
+    "AuctionEnded",
+    "BidderHasBeenOverbid",
+    "WinningBidPlaced",
     # repositories
     "AuctionsRepository",
     # use cases
@@ -40,6 +45,12 @@ from auctions.application.use_cases import (
     PlacingBidOutputDto,
     WithdrawingBids,
     WithdrawingBidsInputDto,
+)
+from auctions.domain.events import (
+    AuctionBegan,
+    AuctionEnded,
+    BidderHasBeenOverbid,
+    WinningBidPlaced,
 )
 from auctions.domain.value_objects import AuctionId
 
