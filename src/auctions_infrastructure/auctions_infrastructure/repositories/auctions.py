@@ -27,17 +27,17 @@ class SqlAlchemyAuctionsRepository(AuctionsRepository):
         ).fetchall()
         return self._row_to_entity(row, list(bid_rows))
 
-    def _row_to_entity(self, auction_proxy: Row, bids_proxies: List[Row]) -> Auction:
+    def _row_to_entity(self, auction_row: Row, bids_rows: List[Row]) -> Auction:
         auction_bids = [
-            Bid(bid.id, bid.bidder_id, get_usd(bid.amount)) for bid in bids_proxies
+            Bid(bid.id, bid.bidder_id, get_usd(bid.amount)) for bid in bids_rows
         ]
         return Auction(
-            auction_proxy.id,
-            auction_proxy.title,
-            get_usd(auction_proxy.starting_price),
+            auction_row.id,
+            auction_row.title,
+            get_usd(auction_row.starting_price),
             auction_bids,
-            auction_proxy.ends_at.replace(tzinfo=pytz.UTC),
-            auction_proxy.ended,
+            auction_row.ends_at.replace(tzinfo=pytz.UTC),
+            auction_row.ended,
         )
 
     def save(self, auction: Auction) -> None:
