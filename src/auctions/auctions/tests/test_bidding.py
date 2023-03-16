@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 from typing import Optional
+from unittest.mock import Mock, call
 
 import pytest
 import pytz
@@ -14,10 +15,12 @@ from auctions.application.use_cases.placing_bid import (
     PlacingBidOutputDto,
 )
 from auctions.domain.entities import Auction
+from auctions.domain.events import BidderHasBeenOverbid, WinningBidPlaced
 from auctions.domain.exceptions import BidOnEndedAuction
 from auctions.domain.value_objects import AuctionId
 from auctions.tests.factories import AuctionFactory
 from auctions.tests.in_memory_repo import InMemoryAuctionsRepository
+from foundation.events import EventBus
 from foundation.value_objects.factories import get_usd
 
 
@@ -50,8 +53,13 @@ def auction_title(auction: Auction) -> str:
 
 
 @pytest.fixture()
-def auctions_repo() -> AuctionsRepository:
-    return InMemoryAuctionsRepository()
+def event_bus() -> Mock:
+    return Mock(spec_set=EventBus)
+
+
+@pytest.fixture()
+def auctions_repo(event_bus: Mock) -> AuctionsRepository:
+    return InMemoryAuctionsRepository(event_bus)
 
 
 @pytest.fixture()
@@ -118,6 +126,53 @@ def test_Auction_OverbidByWinner_IsWinning(
 
     assert output_boundary.dto == PlacingBidOutputDto(
         is_winner=True, current_price=get_usd("120")
+    )
+
+
+def test_Auction_FirstBid_EmitsEvent(
+    place_bid_uc: PlacingBid, event_bus: Mock, auction_id: AuctionId, auction_title: str
+) -> None:
+    place_bid_uc.execute(PlacingBidInputDto(1, auction_id, get_usd("100")))
+
+    event_bus.emit.assert_called_once_with(
+        WinningBidPlaced(auction_id, 1, get_usd("100"), auction_title)
+    )
+
+
+def test_Auction_OverbidFromOtherBidder_EmitsEvents(
+    beginning_auction_uc: BeginningAuction, place_bid_uc: PlacingBid, event_bus: Mock
+) -> None:
+    auction_id = 1
+    tomorrow = datetime.now(tz=pytz.UTC) + timedelta(days=1)
+    beginning_auction_uc.execute(
+        BeginningAuctionInputDto(auction_id, "Foo", get_usd("1.00"), tomorrow)
+    )
+    place_bid_uc.execute(PlacingBidInputDto(1, auction_id, get_usd("2.0")))
+
+    event_bus.emit.reset_mock()
+    place_bid_uc.execute(PlacingBidInputDto(2, auction_id, get_usd("3.0")))
+
+    event_bus.emit.assert_has_calls(
+        [
+            call(WinningBidPlaced(auction_id, 2, get_usd("3.0"), "Foo")),
+            call(BidderHasBeenOverbid(auction_id, 1, get_usd("3.0"), "Foo")),
+        ],
+        any_order=True,
+    )
+
+    assert event_bus.emit.call_count == 2
+
+
+def test_Auction_OverbidFromWinner_EmitsWinningBidEventOnly(
+    place_bid_uc: PlacingBid, event_bus: Mock, auction_id: AuctionId, auction_title: str
+) -> None:
+    place_bid_uc.execute(PlacingBidInputDto(3, auction_id, get_usd("100")))
+    event_bus.emit.reset_mock()
+
+    place_bid_uc.execute(PlacingBidInputDto(3, auction_id, get_usd("120")))
+
+    event_bus.emit.assert_called_once_with(
+        WinningBidPlaced(auction_id, 3, get_usd("120"), auction_title)
     )
 
 
