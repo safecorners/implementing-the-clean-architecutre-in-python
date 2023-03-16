@@ -1,7 +1,8 @@
 import injector
+from auctions import AuctionsRepository, GetActiveAuctions, GetSingleAuction
+from foundation.events import EventBus
 from sqlalchemy.engine import Connection
 
-from auctions import AuctionsRepository, GetActiveAuctions, GetSingleAuction
 from auctions_infrastructure.models import auctions, bids
 from auctions_infrastructure.queries import SqlGetActiveAuctions, SqlGetSingleAuction
 from auctions_infrastructure.repositories.auctions import SqlAlchemyAuctionsRepository
@@ -25,5 +26,7 @@ class AuctionsInfrastructure(injector.Module):
         return SqlGetSingleAuction(conn)
 
     @injector.provider
-    def auctions_repository(self, conn: Connection) -> AuctionsRepository:
-        return SqlAlchemyAuctionsRepository(conn)
+    def auctions_repository(
+        self, conn: Connection, event_bus: EventBus
+    ) -> AuctionsRepository:
+        return SqlAlchemyAuctionsRepository(conn, event_bus)

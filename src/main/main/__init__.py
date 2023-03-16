@@ -8,7 +8,7 @@ from sqlalchemy.engine import Connection, Engine, create_engine
 from auctions import Auctions
 from auctions_infrastructure import AuctionsInfrastructure
 from db_infrastructure import metadata
-from main.modules import Db
+from main.modules import Db, EventBusModule
 from web_app_models import User
 
 __all__ = ["bootstrap_app"]
@@ -45,6 +45,7 @@ def _setup_dependency_injection(settings: dict, engine: Engine) -> injector.Inje
             Db(engine),
             Auctions(),
             AuctionsInfrastructure(),
+            EventBusModule(),
         ],
         auto_bind=False,
     )
