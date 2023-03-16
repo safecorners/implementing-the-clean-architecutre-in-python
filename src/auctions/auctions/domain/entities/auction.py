@@ -1,19 +1,26 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import List
+from typing import List, Optional
 
 from auctions.domain.entities.bid import Bid
+from auctions.domain.events import (
+    AuctionBegan,
+    AuctionEnded,
+    BidderHasBeenOverbid,
+    WinningBidPlaced,
+)
 from auctions.domain.exceptions import (
     AuctionAlreadyEnded,
     AuctionHasNotEnded,
     BidOnEndedAuction,
 )
 from auctions.domain.value_objects import AuctionId, BidderId, BidId
+from foundation.events import EventMixin
 from foundation.value_objects import Money
 
 
-class Auction:
+class Auction(EventMixin):
     def __init__(
         self,
         id: AuctionId,
@@ -23,6 +30,7 @@ class Auction:
         ends_at: datetime,
         ended: bool,
     ) -> None:
+        super().__init__()
         self.id = id
         self.title = title
         self.starting_price = starting_price
@@ -35,13 +43,20 @@ class Auction:
         if self._should_end:
             raise BidOnEndedAuction
 
+        old_winner = self.winners[0] if self.bids else None
         if amount > self.starting_price:
-            new_bid = Bid(
-                id=None,
-                bidder_id=bidder_id,
-                amount=amount,
+            self.bids.append(
+                Bid(
+                    id=None,
+                    bidder_id=bidder_id,
+                    amount=amount,
+                )
             )
-            self.bids.append(new_bid)
+            self._record_event(WinningBidPlaced(self.id, bidder_id, amount, self.title))
+            if old_winner and old_winner != bidder_id:
+                self._record_event(
+                    BidderHasBeenOverbid(self.id, old_winner, amount, self.title)
+                )
 
     @property
     def _should_end(self) -> bool:
@@ -78,7 +93,14 @@ class Auction:
         if self._ended is True:
             raise AuctionAlreadyEnded
 
+        winner_id: Optional[BidderId] = None
+        if self.bids:
+            winner_id = self._highest_bid.bidder_id
+
         self._ended = True
+        self._record_event(
+            AuctionEnded(self.id, winner_id, self.current_price, self.title)
+        )
 
     @classmethod
     def create(
@@ -92,6 +114,7 @@ class Auction:
             ends_at=ends_at,
             ended=False,
         )
+        auction._record_event(AuctionBegan(id, starting_price, title))
         return auction
 
     def __str__(self) -> str:

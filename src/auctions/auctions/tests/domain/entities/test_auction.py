@@ -3,11 +3,10 @@ from datetime import datetime, timedelta
 import pytest
 
 from auctions.domain.entities import Bid
-from auctions.domain.exceptions import (
-    AuctionAlreadyEnded,
-    AuctionHasNotEnded,
-    BidOnEndedAuction,
-)
+from auctions.domain.events import (AuctionEnded, BidderHasBeenOverbid,
+                                    WinningBidPlaced)
+from auctions.domain.exceptions import (AuctionAlreadyEnded,
+                                        AuctionHasNotEnded, BidOnEndedAuction)
 from auctions.tests.factories import AuctionFactory
 from foundation.value_objects.factories import get_usd
 
@@ -99,6 +98,69 @@ def test_should_not_allow_placing_bids_for_ended_auction(yesterday: datetime) ->
 
     with pytest.raises(BidOnEndedAuction):
         auction.place_bid(bidder_id=1, amount=auction.current_price + get_usd("1.00"))
+
+
+def test_should_emit_event_upon_overbid() -> None:
+    bid_that_will_lose = Bid(id=1, bidder_id=1, amount=get_usd("15.00"))
+    auction = AuctionFactory(bids=[bid_that_will_lose])
+
+    new_bid_amount = get_usd("20.00")
+    auction.place_bid(bidder_id=2, amount=new_bid_amount)
+
+    expected_event = BidderHasBeenOverbid(
+        auction.id, bid_that_will_lose.bidder_id, new_bid_amount, auction.title
+    )
+
+    assert expected_event
+
+
+def test_should_emit_winning_event_if_the_first_offer() -> None:
+    auction = AuctionFactory()
+    winning_amount = auction.current_price + get_usd("1.00")
+
+    auction.place_bid(bidder_id=1, amount=winning_amount)
+
+    assert auction.domain_events == [
+        WinningBidPlaced(auction.id, 1, winning_amount, auction.title)
+    ]
+
+
+def test_should_emit_winning_if_overbids() -> None:
+    auction = AuctionFactory(bids=[Bid(id=1, bidder_id=1, amount=get_usd("15.00"))])
+    winning_amount = auction.current_price + get_usd("1.00")
+    auction.place_bid(bidder_id=2, amount=winning_amount)
+
+    expected_winning_event = WinningBidPlaced(
+        auction.id, 2, winning_amount, auction.title
+    )
+    expected_overbid_event = BidderHasBeenOverbid(
+        auction.id, 1, winning_amount, auction.title
+    )
+    assert auction.domain_events == [expected_winning_event, expected_overbid_event]
+
+
+def test_should_emit_auction_ended(yesterday: datetime) -> None:
+    auction = AuctionFactory(
+        bids=[Bid(id=1, bidder_id=1, amount=get_usd("15.00"))], ends_at=yesterday
+    )
+
+    auction.end()
+
+    expected_event = AuctionEnded(
+        auction.id, auction.winners[0], auction.current_price, auction.title
+    )
+    assert auction.domain_events == [expected_event]
+
+
+def test_should_emit_event_with_none_winner_if_no_winners(yesterday: datetime) -> None:
+    auction = AuctionFactory(ends_at=yesterday)
+
+    auction.end()
+
+    expected_event = AuctionEnded(
+        auction.id, None, auction.current_price, auction.title
+    )
+    assert auction.domain_events == [expected_event]
 
 
 def test_should_raise_if_auction_has_not_been_ended() -> None:
