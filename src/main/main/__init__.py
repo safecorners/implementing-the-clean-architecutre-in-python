@@ -8,7 +8,7 @@ from sqlalchemy.engine import Engine, create_engine
 from auctions import Auctions
 from auctions_infrastructure import AuctionsInfrastructure
 from db_infrastructure import metadata
-from main.modules import Db, EventBusModule
+from main.modules import Configs, Db, EventBusModule
 from payments import Payments
 from shipping import Shipping
 from shipping_infrastructure import ShippingInfrastructure
@@ -48,6 +48,7 @@ def _setup_dependency_injection(settings: dict, engine: Engine) -> injector.Inje
     return injector.Injector(
         [
             Db(engine),
+            Configs(settings),
             Auctions(),
             AuctionsInfrastructure(),
             EventBusModule(),
