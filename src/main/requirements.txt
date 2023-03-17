@@ -2,4 +2,5 @@ injector
 python-dotenv
 rq
 redis
+types-redis
 sqlalchemy
