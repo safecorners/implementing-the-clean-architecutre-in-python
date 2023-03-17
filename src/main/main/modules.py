@@ -6,7 +6,7 @@ from sqlalchemy.engine import Connection, Engine
 from sqlalchemy.orm import Session
 
 from customer_relationship import CustomerRelationshipConfig
-from foundation.events import EventBus, InMemoryEventBus
+from foundation.events import EventBus, InjectorEventBus
 from payments import PaymentsConfig
 
 
@@ -74,7 +74,7 @@ class EventBusModule(injector.Module):
     @injector.singleton
     @injector.provider
     def event_bus(self) -> EventBus:
-        return InMemoryEventBus()
+        return InjectorEventBus()
 
 
 class Configs(injector.Module):

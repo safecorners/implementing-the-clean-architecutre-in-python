@@ -33,7 +33,7 @@ class PaymentsFacade:
         dao.start_new_payment(
             payment_uuid, customer_id, amount, description, self._connection
         )
-        self._event_bus.emit(PaymentStarted(payment_uuid, customer_id))
+        self._event_bus.post(PaymentStarted(payment_uuid, customer_id))
 
     def charge(self, payment_uuid: UUID, customer_id: int, token: str) -> None:
         payment = dao.get_payment(payment_uuid, customer_id, self._connection)
@@ -49,7 +49,7 @@ class PaymentsFacade:
                 {"status": dao.PaymentStatus.FAILED.value},
                 self._connection,
             )
-            self._event_bus.emit(PaymentFailed(payment_uuid, customer_id))
+            self._event_bus.post(PaymentFailed(payment_uuid, customer_id))
         else:
             update_values = {
                 "status": dao.PaymentStatus.CHARGED.value,
@@ -58,7 +58,7 @@ class PaymentsFacade:
             dao.update_payment(
                 payment_uuid, customer_id, update_values, self._connection
             )
-            self._event_bus.emit(PaymentCharged(payment_uuid, customer_id))
+            self._event_bus.post(PaymentCharged(payment_uuid, customer_id))
 
     def capture(self, payment_uuid: UUID, customer_id: int) -> None:
         charge_id = dao.get_payment_charge_id(
@@ -72,4 +72,4 @@ class PaymentsFacade:
             {"status": dao.PaymentStatus.CAPTURED.value},
             self._connection,
         )
-        self._event_bus.emit(PaymentCaptured(payment_uuid, customer_id))
+        self._event_bus.post(PaymentCaptured(payment_uuid, customer_id))
