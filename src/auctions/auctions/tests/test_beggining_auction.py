@@ -34,7 +34,7 @@ def test_BeginningAuction_BeforeEndDate_emitsEvent(
     )
     beginning_auction_uc.execute(input_dto)
 
-    event_bus_mock.emit.assert_called_once_with(
+    event_bus_mock.post.assert_called_once_with(
         AuctionBegan(1, get_usd("2.00"), "bar-auction")
     )
 

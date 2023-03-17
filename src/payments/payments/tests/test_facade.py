@@ -101,7 +101,7 @@ def test_adding_new_payment_is_reflected_on_pending_payments_list(
     assert pending_payments == [
         PaymentDto(payment_uuid, amount, description, PaymentStatus.NEW.value)
     ]
-    event_bus.emit.assert_called_once_with(PaymentStarted(payment_uuid, customer_id))
+    event_bus.post.assert_called_once_with(PaymentStarted(payment_uuid, customer_id))
 
 
 @pytest.mark.parametrize(
@@ -139,7 +139,7 @@ def test_successful_charge_updates_status(
     payment_row = get_payment(connection, inserted_payment["uuid"])
     assert payment_row.status == PaymentStatus.CHARGED.value
     assert payment_row.charge_id == charge_id
-    event_bus.emit.assert_called_once_with(
+    event_bus.post.assert_called_once_with(
         PaymentCharged(payment_uuid, inserted_payment["customer_id"])
     )
 
@@ -166,7 +166,7 @@ def test_unsuccessful_charge(
         == PaymentStatus.FAILED.value
     )
 
-    event_bus.emit.assert_called_once_with(
+    event_bus.post.assert_called_once_with(
         PaymentFailed(payment_uuid, inserted_payment["customer_id"])
     )
 
@@ -190,6 +190,6 @@ def test_capture(
         get_payment(connection, inserted_payment["uuid"]).status
         == PaymentStatus.CAPTURED.value
     )
-    event_bus.emit.assert_called_once_with(
+    event_bus.post.assert_called_once_with(
         PaymentCaptured(payment_uuid, inserted_payment["customer_id"])
     )
