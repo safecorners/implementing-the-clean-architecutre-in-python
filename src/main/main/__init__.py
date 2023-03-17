@@ -9,6 +9,7 @@ from auctions import Auctions
 from auctions_infrastructure import AuctionsInfrastructure
 from db_infrastructure import metadata
 from main.modules import Db, EventBusModule
+from payments import Payments
 from shipping import Shipping
 from shipping_infrastructure import ShippingInfrastructure
 
@@ -31,7 +32,10 @@ def bootstrap_app() -> AppContext:
     )
 
     dotenv.load_dotenv(config_path)
-    settings = {}
+    settings = {
+        "payments.login": os.environ["PAYMENTS_LOGIN"],
+        "payments.password": os.environ["PAYMENTS_PASSWORD"],
+    }
 
     engine = create_engine(os.environ["DB_DSN"])
     dependency_injector = _setup_dependency_injection(settings, engine)
@@ -47,6 +51,7 @@ def _setup_dependency_injection(settings: dict, engine: Engine) -> injector.Inje
             Auctions(),
             AuctionsInfrastructure(),
             EventBusModule(),
+            Payments(),
             Shipping(),
             ShippingInfrastructure(),
         ],

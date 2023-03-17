@@ -10,6 +10,7 @@ setup(
         "auctions_infrastructure",
         "db_infrastructure",
         "foundation",
+        "payments",
         "shipping",
         "shipping_infrastructure",
         "web_app_models",

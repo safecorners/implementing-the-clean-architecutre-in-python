@@ -18,6 +18,8 @@ def config_path(tmp_path_factory: TempPathFactory) -> str:
     with open(conf_file_path, "w") as f:
         f.writelines(
             [
+                "PAYMENTS_LOGIN=empty\n",
+                "PAYMENTS_PASSWORD=empty\n",
                 f"DB_DSN=sqlite:///{db_dir}/db.sqlite\n",
             ]
         )

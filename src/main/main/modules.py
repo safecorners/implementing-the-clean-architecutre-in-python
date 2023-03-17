@@ -6,6 +6,7 @@ from sqlalchemy.engine import Connection, Engine
 from sqlalchemy.orm import Session
 
 from foundation.events import EventBus, InMemoryEventBus
+from payments import PaymentsConfig
 
 
 # https://injector.readthedocs.io/en/latest/scopes.html#implementing-new-scopes
@@ -73,3 +74,16 @@ class EventBusModule(injector.Module):
     @injector.provider
     def event_bus(self) -> EventBus:
         return InMemoryEventBus()
+
+
+class Configs(injector.Module):
+    def __init__(self, settings: dict[str, str]) -> None:
+        self._settings = settings
+
+    @injector.singleton
+    @injector.provider
+    def payments_confg(self) -> PaymentsConfig:
+        return PaymentsConfig(
+            username=self._settings["payments.login"],
+            password=self._settings["payments.password"],
+        )
