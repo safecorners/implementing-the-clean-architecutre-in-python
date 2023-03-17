@@ -7,6 +7,7 @@ from sqlalchemy.engine import Engine, create_engine
 
 from auctions import Auctions
 from auctions_infrastructure import AuctionsInfrastructure
+from customer_relationship import CustomerRelationship
 from db_infrastructure import metadata
 from main.modules import Configs, Db, EventBusModule
 from payments import Payments
@@ -51,6 +52,7 @@ def _setup_dependency_injection(settings: dict, engine: Engine) -> injector.Inje
             Configs(settings),
             Auctions(),
             AuctionsInfrastructure(),
+            CustomerRelationship(),
             EventBusModule(),
             Payments(),
             Shipping(),

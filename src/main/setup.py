@@ -8,6 +8,7 @@ setup(
         "injector",
         "auctions",
         "auctions_infrastructure",
+        "customer_relationship",
         "db_infrastructure",
         "foundation",
         "payments",
