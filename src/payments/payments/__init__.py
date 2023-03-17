@@ -17,6 +17,7 @@ __all__ = [
     "PaymentsConfig",
     # facade
     "PaymentsFacade",
+    # events
     "PaymentStarted",
     "PaymentCharged",
     "PaymentCaptured",

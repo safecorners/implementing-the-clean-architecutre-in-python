@@ -5,6 +5,7 @@ import injector
 from sqlalchemy.engine import Connection, Engine
 from sqlalchemy.orm import Session
 
+from customer_relationship import CustomerRelationshipConfig
 from foundation.events import EventBus, InMemoryEventBus
 from payments import PaymentsConfig
 
@@ -86,4 +87,15 @@ class Configs(injector.Module):
         return PaymentsConfig(
             username=self._settings["payments.login"],
             password=self._settings["payments.password"],
+        )
+
+    @injector.singleton
+    @injector.provider
+    def customer_relationship_config(self) -> CustomerRelationshipConfig:
+        return CustomerRelationshipConfig(
+            self._settings["email.host"],
+            int(self._settings["email.port"]),
+            self._settings["email.username"],
+            self._settings["email.password"],
+            (self._settings["email.from.name"], self._settings["email.from.address"]),
         )
