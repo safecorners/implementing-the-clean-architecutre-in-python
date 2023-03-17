@@ -1,2 +1,5 @@
 injector
 python-dotenv
+rq
+redis
+sqlalchemy

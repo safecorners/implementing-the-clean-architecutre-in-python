@@ -2,11 +2,18 @@ import threading
 from typing import Type
 
 import injector
+from injector import Provider, T
+from redis import Redis
+from rq import Queue
+from sqlalchemy import event as sqlalchemy_event
 from sqlalchemy.engine import Connection, Engine
 from sqlalchemy.orm import Session
 
 from customer_relationship import CustomerRelationshipConfig
-from foundation.events import EventBus, InjectorEventBus
+from foundation.events import EventBus, InjectorEventBus, RunAsyncHandler
+from foundation.locks import Lock, LockFactory
+from main.async_handler_task import async_handler_generic_task
+from main.redis import RedisLock
 from payments import PaymentsConfig
 
 
@@ -70,11 +77,49 @@ class Db(injector.Module):
         return Session(bind=connection)
 
 
+class RedisModule(injector.Module):
+    def __init__(self, redis_host: str) -> None:
+        self._redis_host = redis_host
+
+    def configure(self, binder: injector.Binder) -> None:
+        binder.bind(Redis, Redis(host=self._redis_host))
+
+    @injector.provider
+    def lock(self, redis: Redis) -> LockFactory:
+        def create_lock(name: str, timeout: int = 30) -> Lock:
+            return RedisLock(redis, name, timeout)
+
+        return create_lock
+
+
+class Rq(injector.Module):
+    @injector.singleton
+    @injector.provider
+    def queue(self, redis: Redis) -> Queue:
+        queue = Queue(connection=redis)
+        return queue
+
+    @injector.provider
+    def run_async_handler(
+        self, queue: Queue, connection: Connection
+    ) -> RunAsyncHandler:
+        def enqueue_after_commit(handler_cls, *args, **kwargs):  # type: ignore
+            sqlalchemy_event.listens_for(connection, "commit")(
+                lambda _conn: queue.enqueue(
+                    async_handler_generic_task, handler_cls, *args, **kwargs
+                )
+            )
+
+        return enqueue_after_commit
+
+
 class EventBusModule(injector.Module):
     @injector.singleton
     @injector.provider
-    def event_bus(self) -> EventBus:
-        return InjectorEventBus()
+    def event_bus(
+        self, injector: injector.Injector, run_async_handler: RunAsyncHandler
+    ) -> EventBus:
+        return InjectorEventBus(injector, run_async_handler)
 
 
 class Configs(injector.Module):

@@ -3,16 +3,18 @@ from dataclasses import dataclass
 
 import dotenv
 import injector
-from sqlalchemy.engine import Engine, create_engine
+from sqlalchemy import event as sa_event
+from sqlalchemy.engine import Connection, Engine, create_engine
 
 from auctions import Auctions
 from auctions_infrastructure import AuctionsInfrastructure
-from customer_relationship import CustomerRelationship
+from customer_relationship import CustomerRelationship, CustomerRelationshipFacade
 from db_infrastructure import metadata
-from main.modules import Configs, Db, EventBusModule
+from main.modules import Configs, Db, EventBusModule, RedisModule, Rq
 from payments import Payments
 from shipping import Shipping
 from shipping_infrastructure import ShippingInfrastructure
+from web_app_models import User
 
 __all__ = ["bootstrap_app"]
 
@@ -36,10 +38,19 @@ def bootstrap_app() -> AppContext:
     settings = {
         "payments.login": os.environ["PAYMENTS_LOGIN"],
         "payments.password": os.environ["PAYMENTS_PASSWORD"],
+        "email.host": os.environ["EMAIL_HOST"],
+        "email.port": os.environ["EMAIL_PORT"],
+        "email.username": os.environ["EMAIL_USERNAME"],
+        "email.password": os.environ["EMAIL_PASSWORD"],
+        "email.from.name": os.environ["EMAIL_FROM_NAME"],
+        "email.from.address": os.environ["EMAIL_FROM_ADDRESS"],
+        "redis.host": os.environ["REDIS_HOST"],
     }
 
     engine = create_engine(os.environ["DB_DSN"])
     dependency_injector = _setup_dependency_injection(settings, engine)
+    _setup_orm_events(dependency_injector)
+
     _create_db_schema(engine)
 
     return AppContext(dependency_injector)
@@ -49,17 +60,33 @@ def _setup_dependency_injection(settings: dict, engine: Engine) -> injector.Inje
     return injector.Injector(
         [
             Db(engine),
+            RedisModule(settings["redis.host"]),
+            Rq(),
             Configs(settings),
+            EventBusModule(),
             Auctions(),
             AuctionsInfrastructure(),
-            CustomerRelationship(),
-            EventBusModule(),
-            Payments(),
             Shipping(),
             ShippingInfrastructure(),
+            CustomerRelationship(),
+            Payments(),
         ],
         auto_bind=False,
     )
+
+
+def _setup_orm_events(dependency_injector: injector.Injector) -> None:
+    @sa_event.listens_for(User, "after_insert")
+    def insert_cb(_mapper, _connection: Connection, user: User) -> None:  # type: ignore
+        dependency_injector.get(CustomerRelationshipFacade).create_customer(
+            user.id, user.email
+        )
+
+    @sa_event.listens_for(User, "after_update")
+    def update_cb(_mapper, _connection: Connection, user: User) -> None:
+        dependency_injector.get(CustomerRelationshipFacade).update_customer(
+            user.id, user.email
+        )
 
 
 def _create_db_schema(engine: Engine) -> None:
