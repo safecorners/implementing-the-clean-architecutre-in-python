@@ -9,6 +9,8 @@ from auctions import Auctions
 from auctions_infrastructure import AuctionsInfrastructure
 from db_infrastructure import metadata
 from main.modules import Db, EventBusModule
+from shipping import Shipping
+from shipping_infrastructure import ShippingInfrastructure
 
 __all__ = ["bootstrap_app"]
 
@@ -45,6 +47,8 @@ def _setup_dependency_injection(settings: dict, engine: Engine) -> injector.Inje
             Auctions(),
             AuctionsInfrastructure(),
             EventBusModule(),
+            Shipping(),
+            ShippingInfrastructure(),
         ],
         auto_bind=False,
     )
