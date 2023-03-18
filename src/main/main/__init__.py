@@ -12,6 +12,7 @@ from customer_relationship import CustomerRelationship, CustomerRelationshipFaca
 from db_infrastructure import metadata
 from main.modules import Configs, Db, EventBusModule, RedisModule, Rq
 from payments import Payments
+from processes import Processes
 from shipping import Shipping
 from shipping_infrastructure import ShippingInfrastructure
 from web_app_models import User
@@ -70,6 +71,7 @@ def _setup_dependency_injection(settings: dict, engine: Engine) -> injector.Inje
             ShippingInfrastructure(),
             CustomerRelationship(),
             Payments(),
+            Processes(),
         ],
         auto_bind=False,
     )
