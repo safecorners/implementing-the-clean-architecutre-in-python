@@ -1,4 +1,3 @@
-import json
 import uuid
 from typing import Any, Dict
 from unittest.mock import Mock, patch
@@ -8,11 +7,18 @@ from _pytest.fixtures import SubRequest
 from sqlalchemy.engine import Connection, Engine, Row
 
 from db_infrastructure import Base
+from foundation.events import EventBus
 from foundation.value_objects.factories import get_usd
 from payments.api import ApiConsumer
 from payments.api.exceptions import PaymentFailedError
 from payments.config import PaymentsConfig
 from payments.dao import PaymentDto, PaymentStatus
+from payments.events import (
+    PaymentCaptured,
+    PaymentCharged,
+    PaymentFailed,
+    PaymentStarted,
+)
 from payments.facade import PaymentsFacade
 from payments.models import payments
 
@@ -28,8 +34,13 @@ def setup_teardown_tables(engine: Engine) -> None:
 
 
 @pytest.fixture()
-def facade(connection: Connection) -> PaymentsFacade:
-    return PaymentsFacade(PaymentsConfig("", ""), connection)
+def event_bus() -> Mock:
+    return Mock(spec_set=EventBus)
+
+
+@pytest.fixture()
+def facade(connection: Connection, event_bus: Mock) -> PaymentsFacade:
+    return PaymentsFacade(PaymentsConfig("", ""), connection, event_bus)
 
 
 @pytest.fixture()
@@ -62,7 +73,7 @@ def get_payment(connection: Connection, payment_uuid: str) -> Row:
 
 @pytest.mark.usefixtures("transaction")
 def test_adding_new_payment_is_reflected_on_pending_payments_list(
-    facade: PaymentsFacade, connection: Connection
+    facade: PaymentsFacade, connection: Connection, event_bus: Mock
 ) -> None:
     customer_id = 1
     assert facade.get_pending_payments(customer_id) == []
@@ -90,6 +101,7 @@ def test_adding_new_payment_is_reflected_on_pending_payments_list(
     assert pending_payments == [
         PaymentDto(payment_uuid, amount, description, PaymentStatus.NEW.value)
     ]
+    event_bus.post.assert_called_once_with(PaymentStarted(payment_uuid, customer_id))
 
 
 @pytest.mark.parametrize(
@@ -106,7 +118,10 @@ def test_pending_payments_returns_only_new_payments(
 
 @pytest.mark.usefixtures("transaction")
 def test_successful_charge_updates_status(
-    facade: PaymentsFacade, inserted_payment: dict, connection: Connection
+    facade: PaymentsFacade,
+    inserted_payment: dict,
+    connection: Connection,
+    event_bus: Mock,
 ) -> None:
     payment_uuid = uuid.UUID(inserted_payment["uuid"])
     charge_id = "SOME_CHARGE_ID"
@@ -124,11 +139,17 @@ def test_successful_charge_updates_status(
     payment_row = get_payment(connection, inserted_payment["uuid"])
     assert payment_row.status == PaymentStatus.CHARGED.value
     assert payment_row.charge_id == charge_id
+    event_bus.post.assert_called_once_with(
+        PaymentCharged(payment_uuid, inserted_payment["customer_id"])
+    )
 
 
 @pytest.mark.usefixtures("transaction")
 def test_unsuccessful_charge(
-    facade: PaymentsFacade, inserted_payment: dict, connection: Connection
+    facade: PaymentsFacade,
+    inserted_payment: dict,
+    connection: Connection,
+    event_bus: Mock,
 ) -> None:
     payment_uuid = uuid.UUID(inserted_payment["uuid"])
 
@@ -145,13 +166,20 @@ def test_unsuccessful_charge(
         == PaymentStatus.FAILED.value
     )
 
+    event_bus.post.assert_called_once_with(
+        PaymentFailed(payment_uuid, inserted_payment["customer_id"])
+    )
+
 
 @pytest.mark.parametrize(
     "inserted_payment", [PaymentStatus.CHARGED.value], indirect=["inserted_payment"]
 )
 @pytest.mark.usefixtures("transaction")
 def test_capture(
-    facade: PaymentsFacade, inserted_payment: dict, connection: Connection
+    facade: PaymentsFacade,
+    inserted_payment: dict,
+    connection: Connection,
+    event_bus: Mock,
 ) -> None:
     payment_uuid = uuid.UUID(inserted_payment["uuid"])
     with patch.object(ApiConsumer, "capture") as capture_mock:
@@ -161,4 +189,7 @@ def test_capture(
     assert (
         get_payment(connection, inserted_payment["uuid"]).status
         == PaymentStatus.CAPTURED.value
+    )
+    event_bus.post.assert_called_once_with(
+        PaymentCaptured(payment_uuid, inserted_payment["customer_id"])
     )

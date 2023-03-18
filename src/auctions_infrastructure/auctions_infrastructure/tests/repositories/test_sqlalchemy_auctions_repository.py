@@ -184,4 +184,4 @@ def test_AuctionsRepo_UponSavingAuction_EmitsPendingEventsViaEventBus(
 
     repo.save(auction)
 
-    event_bus_mock.emit.assert_called()
+    event_bus_mock.post.assert_called()

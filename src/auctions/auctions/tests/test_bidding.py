@@ -134,7 +134,7 @@ def test_Auction_FirstBid_EmitsEvent(
 ) -> None:
     place_bid_uc.execute(PlacingBidInputDto(1, auction_id, get_usd("100")))
 
-    event_bus.emit.assert_called_once_with(
+    event_bus.post.assert_called_once_with(
         WinningBidPlaced(auction_id, 1, get_usd("100"), auction_title)
     )
 
@@ -149,10 +149,10 @@ def test_Auction_OverbidFromOtherBidder_EmitsEvents(
     )
     place_bid_uc.execute(PlacingBidInputDto(1, auction_id, get_usd("2.0")))
 
-    event_bus.emit.reset_mock()
+    event_bus.post.reset_mock()
     place_bid_uc.execute(PlacingBidInputDto(2, auction_id, get_usd("3.0")))
 
-    event_bus.emit.assert_has_calls(
+    event_bus.post.assert_has_calls(
         [
             call(WinningBidPlaced(auction_id, 2, get_usd("3.0"), "Foo")),
             call(BidderHasBeenOverbid(auction_id, 1, get_usd("3.0"), "Foo")),
@@ -160,18 +160,18 @@ def test_Auction_OverbidFromOtherBidder_EmitsEvents(
         any_order=True,
     )
 
-    assert event_bus.emit.call_count == 2
+    assert event_bus.post.call_count == 2
 
 
 def test_Auction_OverbidFromWinner_EmitsWinningBidEventOnly(
     place_bid_uc: PlacingBid, event_bus: Mock, auction_id: AuctionId, auction_title: str
 ) -> None:
     place_bid_uc.execute(PlacingBidInputDto(3, auction_id, get_usd("100")))
-    event_bus.emit.reset_mock()
+    event_bus.post.reset_mock()
 
     place_bid_uc.execute(PlacingBidInputDto(3, auction_id, get_usd("120")))
 
-    event_bus.emit.assert_called_once_with(
+    event_bus.post.assert_called_once_with(
         WinningBidPlaced(auction_id, 3, get_usd("120"), auction_title)
     )
 
